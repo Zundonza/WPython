@@ -1,0 +1,92 @@
+imp math as m
+imp asyncio
+
+df process_data(data):
+    if data is N:
+        rt N
+    
+    tr:
+        if isinstance(data, str):
+            rt len(data)
+        
+        el isinstance(data, (int, float)):
+            result = data ** 2
+            if result > 1000:
+                rs ValueError("Слишком большое число!")
+            
+            rt result
+        
+        es:
+            rs TypeError("Неподдерживаемый тип данных!")
+    ex ValueError as ve:
+        prt(f"Ошибка значения: {ve}")
+        rt -1
+    ex Exception as exe:
+        prt(f"Ошибка: {exe}")
+        rt -1
+    fnl:
+        prt("Завершение обработки данных.")
+
+ayc df async_task():
+    prt("Начинаем асинхронную операцию...")
+    awt asyncio.sleep(2)
+    prt("Асинхронная операция завершена.")
+    rt T
+
+cls DataProcessor:
+    df __init__(self):
+        self.data = []
+
+    df add_data(self, item):
+        glb added
+        if item nt in self.data:
+            self.data.append(item)
+            added = T
+        es:
+            added = F
+    
+    df display_data(self):
+        prt("Текущие данные:", self.data)
+    
+    df filter_data(self):
+        self.data = [item fr item in self.data if isinstance(item, (int, float)) a item > 0]
+    
+    df calculate_total(self):
+        total = sum(self.data)
+        rt total
+
+df main():
+    processor = DataProcessor()
+    
+    fr item in [N, "Привет", 5, -3.5, 42, "Python"]:
+        if isinstance(item, (int, float)) a item >= 0:
+            processor.add_data(item)
+    
+    processor.display_data()
+    processor.filter_data()
+    total = processor.calculate_total()
+    
+    prt(f"Сумма положительных чисел: {total}")
+
+    square = lb x: x ** 2
+    prt(f"Квадрат 3: {square(3)}")
+
+    tr:
+        asyncio.run(async_task())
+    ex RuntimeError as re:
+        prt(f"Асинхронная ошибка: {re}")
+
+    wh T:
+        response = inp("Введите число (или 'exit' для выхода): ")
+        if response == "exit":
+            brk
+        tr:
+            value = float(response)
+            result = process_data(value)
+            prt(f"Результат обработки: {result}")
+        ex:
+            prt("Ошибка: введите корректное число.")
+            cnt
+
+if __name__ == "__main__":
+    main()
