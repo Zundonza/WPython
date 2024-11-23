@@ -1,0 +1,2 @@
+# WPython
+Shortens Python keywords
