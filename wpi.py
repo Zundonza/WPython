@@ -1,5 +1,6 @@
 import sys
 import re
+import os
 
 help_text = """
 Welcome to WPython.
@@ -11,6 +12,8 @@ Args:
   --to-wpy       Translation mode from py to wpy
   --save-file    Save file after processing
   --auto-exec    Execute output if is possible
+  --interpretor  Interpretor mode
+  --clear        Clear console before run
 
 Usage:
 wpython.exe <file> <args>
@@ -60,9 +63,10 @@ is_debug_mode = False
 save_file = False
 to_wpy_mode = False
 auto_exec = False
+interpretor = False
 
 def process_args(args: list):
-    global is_debug_mode, keywords_dict, save_file, to_wpy_mode, auto_exec
+    global is_debug_mode, keywords_dict, save_file, to_wpy_mode, auto_exec, interpretor
 
     for _raw_arg in args:
         raw_arg = str(_raw_arg)
@@ -84,11 +88,24 @@ def process_args(args: list):
                 to_wpy_mode = True
             elif arg == "auto-exec":
                 auto_exec = True
+            elif arg == "interpretor":
+                interpretor = True
+            elif arg == "clear":
+                os.system('cls' if os.name=='nt' else 'clear')
 
 def log(message: str = ""):
     global is_debug_mode
     if is_debug_mode:
         print(f"• {message}")
+
+def replace_keyword(match):
+    word = match.group(0)
+    for original, abbr in keywords_dict.items():
+        if word == abbr and not to_wpy_mode:
+            return original
+        elif word == original:
+            return abbr
+    return word
 
 def preprocess(file_name: str):
     global save_file, to_wpy_mode
@@ -110,15 +127,6 @@ def preprocess(file_name: str):
 
     for line in raw_lines:
         original_line = line
-
-        def replace_keyword(match):
-            word = match.group(0)
-            for original, abbr in keywords_dict.items():
-                if word == abbr and not to_wpy_mode:
-                    return original
-                elif word == original:
-                    return abbr
-            return word
 
         regex = r'\b\w+\b(?=(?:[^"]*"[^"]*")*[^"]*$)'
         processed_line = re.sub(regex, replace_keyword, line)
@@ -144,6 +152,19 @@ def preprocess(file_name: str):
 
     return processed_lines
 
+def process_interpretor_command(command: str):
+    regex = r'\b\w+\b(?=(?:[^"]*"[^"]*")*[^"]*$)'
+    log("Processing line...")
+    processed_line = re.sub(regex, replace_keyword, command)
+    log(f"Original: {command}")
+    log(f"Processed: {processed_line}")
+    try:
+        log("Trying to execute...")
+        exec(processed_line, globals())
+        log("Executed")
+    except Exception as e:
+        print("Interpretator error: " + str(e))
+
 if __name__ == "__main__":
     args = sys.argv
     if len(args) < 2:
@@ -152,10 +173,18 @@ if __name__ == "__main__":
 
     process_args(args)
 
-    to_exec = preprocess(args[1])
+    if not interpretor:
+        to_exec = preprocess(args[1])
+    else:
+        while True:
+            try:
+                command = input(">> ")
+                process_interpretor_command(command)
+            except InterruptedError:
+                print("Exiting...")
 
     if auto_exec:
         log()
         log("Executing...")
 
-        exec(to_exec)
+        exec(to_exec, globals())
